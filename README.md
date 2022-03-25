@@ -1,70 +1,71 @@
-# Getting Started with Create React App
+# Nwitter - 전소진
+Twitter Clone 2022<br>
+교재 참고 자료 : https://github.com/easysIT/nwitter
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 03월 23일
+> React 프로젝트 생성 및 파일 정리하기
 
-## Available Scripts
+**1. React 프로젝트 생성하기**
+- React 프로젝트를 생성하기 위해서는 아래의 명령어를 실행해주어야 한다.
+```jsx
+npx create-react-app nwitter
+```
 
-In the project directory, you can run:
+**2. React 프로젝트 생성 시 발생하는 오류 해결하기**
+- React 프로젝트 생성 시, 다음과 같은 에러 메세지가 발생할 수 있다.
+- 이는 create-react-app을 설치할 때 최신 버전이 아니어서 발생하는 문제이다.
+```jsx
+You are running `create-react-app` 4.0.3, which is behind the latest release (5.0.0).
+```
+- 해결 방법은 아래의 명령어를 순서대로 실행해주면 된다.
+```jsx
+npm uninstall -g create-react-app
+npm add create-react-app
+npx create-react-app nwitter
+```
+- 이 외에도 하단의 오류 메시지 내 사이트 URL을 통해서 확인이 가능하다.<br> 
+https://create-react-app.dev/docs/getting-started/
 
-### `npm start`
+**+) React 프로젝트 생성 시 발생하는 오류가 해결되지 않을 때는?**
+- 다음과 같이 create-react-app을 삭제해도 문제가 해결되지 않을 때가 있다.
+- 이러한 경우에는 아래의 2가지 방법으로 오류를 해결할 수 있다.
+```jsx
+npx create-react-app@latest nwitter  // 일회성으로 해결하는 방법
+```
+```jsx
+npm install -g create-react-app@latest  // 영구적으로 해결하는 방법
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**3. React 프로젝트 파일 정리하기**
+- 기본적으로 사용할 파일들의 코드를 수정해준다.
+→ [관련 커밋 : Edit files](https://github.com/jsso16/nwitter/commit/190423d8184da09724658b04958cc367cad76940)
+  - package.json
+  - index.js
+  - App.js
+- 이 외의 프로젝트 작업에 필요하지 않은 파일들을 삭제해준다.
+  - App.css
+  - App.test.js
+  - index.css
+  - logo.svg
+  - reportWebVitals.js
+  - setupTest.js
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+> React 프로젝트에 Github 연동하기
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**1. 로컬 PC에서 Github에 Push하기**
+- Git 최초 설정하기
+```jsx
+git config --global user.name "Your Name"
+git config --global user.email "Your Email"
+```
+- Git 설정 확인하기
+```jsx
+git config --global user.name
+git config --global user.email
+```
+- Github에 파일 올리기
+```jsx
+git add .  // 변경된 파일 등록
+git commit -m "commit message"  // 등록된 파일을 묶어 메세지 첨부
+git push origin master  // 저장소로 등록된 파일과 메세지 업로드
+```
