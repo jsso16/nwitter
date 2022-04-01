@@ -37,6 +37,7 @@ npm install firebase
 - Firebase의 동작 확인은 index.js 파일에 console.log 함수를 출력해보기만 하면 된다.
 - 제대로 동작이 된다면 콘솔창에서 아래 사진의 내용을 확인할 수 있다.
 <img width="420" alt="Firebase 변수값" src="https://user-images.githubusercontent.com/62285642/161128583-dab9b7f7-c7de-494c-b54b-de00c3cab5c3.png">
+
 - 그러나 해당 내용이 콘솔창에서 확인되지 않는 경우가 있다.
 - 이는 Firebase의 버전으로 인한 문제이므로 버전에 따라 아래와 같이 작성해주어야 한다.
 ```jsx
