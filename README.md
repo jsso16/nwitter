@@ -2,9 +2,128 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 04월 13일
+> Firebase 오류 해결하기
+
+**1. Firebase 관련 오류 해결하기**
+- 지난 강의 시간에 firebase와 관련된 다양한 오류들이 발생하였다.
+- 이 프로젝트의 경우, firebase의 import 경로에 compat를 추가해주지 않아 오류가 발생하였다.
+- 따라서 아래와 같이 코드를 수정하여 오류를 해결하였다.<br>
+→ [관련 커밋 : Edit fbase.js](https://github.com/jsso16/nwitter/commit/41c483631cae92733ed776207d885417f4703dec)
+
+**2. Firebase 버전 낮추기**
+- 다양한 오류 중, fbase.js 파일에 auth를 import하면 화면이 출력되지 않는 문제가 있었다.
+- 이런 경우에는 Firebase의 버전을 낮춰주어야 한다.
+- Firebase를 다운그레이드하기 위해서는 아래의 명령어를 실행해주면 된다.
+```jsx
+npm install firebase @8.8.0
+```
+
+> Firebase 로그인 준비하기<br>
+> +) 04월 06일 README.md 참조
+
+**1. useState의 초기값 변경해주기**
+- auth 모듈 동작 확인을 위해 사용한 currentUser는 값에 따라서 로그인 상태를 바꿔줄 수 있다.
+- 따라서 이 값을 아래와 같이 useState의 초기값으로 정의해준다.
+```jsx
+const [isLoggedIn, setIsLoggedIn] = useState(authService.currentUser);
+```
+
+> Firebase 로그인 설정하기
+
+**1. Firebase 인증 설정하기**
+- Firebase 인증 설정 방법은 아래와 같다.
+```
+1. Firebase 홈페이지 접속하기(+ 홈페이지 링크는 하단의 03월 30일 README.md 참조)
+2. 우측 상단의 콘솔로 이동 클릭 후 프로젝트 선택하기
+3. 좌측 메뉴의 Authentication 클릭하기
+4. 상단의 4개의 메뉴 중 Sign-in method 선택하기
+5. 다양한 로그인 업체 중 사용하고 싶은 로그인 방법을 클릭하여 인증하기
+```
+- 기본 제공 업체로 이메일/비밀번호, 전화 등이 있다.
+- 추가 제공 업체로는 이메일, 구글, 깃허브 등 다양한 소셜 로그인이 있다.
+- 추가적으로 다른 로그인 방법을 사용하고 싶다면 로그인 제공업체 추가 버튼을 클릭하여 다양한 로그인 방법을 사용할 수 있다.
+
+**2. 이메일, 비밀번호 로그인 설정하기**
+- 이메일, 비밀번호 로그인 방법은 아래와 같다.
+- 이때 하단의 이메일 링크(비밀번호가 없는 로그인)가 없는 로그인은 허용하지 않아야 한다.
+```
+1. 이메일, 비밀번호 버튼 선택하기
+2. 우측 상단의 사용설정 허용 후 저장 버튼 클릭하기
+```
+
+**3. 구글 소셜 로그인 설정하기**
+- 구글 소셜 로그인 방법은 아래와 같다.
+```
+1. Google 버튼 선택하기
+2. 우측 상단의 사용설정 허용하기
+3. 프로젝트 공개용 이름은 그대로 두고, 프로젝트 지원 이메일은 기본값으로 설정하기
+4. 저장 버튼 클릭하기
+```
+
+**4. Github 소셜 로그인 설정하기**
+- Github 소셜 로그인 설정은 앞의 두 로그인 설정과 다르게 Github에서도 몇 가지 로그인 관련 설정을 추가적으로 진행해주어야 한다.
+- Github 소셜 로그인 방법은 아래와 같다.
+```
+1. Github 버튼 선택하기
+2. 우측 상단의 사용설정 허용하기
+3. 클라이언트 ID와 보안 비밀번호는 빈칸으로 두고, 하단의 승인 콜백 URL 복사하기
+4. Github 접속 후, 우측 상단의 사용자 메뉴의 Settings 클릭하기
+5. 좌측 메뉴의 Developer settings 클릭 후, OAuth Apps 메뉴 클릭하기
+6. Register a new application 버튼 클릭하기
+7. Apllication name 입력하기
+8. Homepage URL에 도메인 입력해주기 
+9. Authorization callback URL에 아까 복사하였던 승인 콜백 URL 입력해주기
+10. Register application 버튼 클릭하기
+11. 이후 생성된 클라이언트 ID를 복사하여 Firebase의 해당 빈칸에 붙여넣기
+12. 다시 Github로 돌아와 Generate a new client secret 버튼을 클릭하여 보안 비밀번호 생성하기
+13. 이후 생성되는 보안 비밀번호도 복사하여 Firebase의 해당 빈칸에 붙여넣기
+14. 저장 버튼 클릭하기
+```
+- Homepage URL을 입력할 때, Firebase 설정 화면의 승인된 도메인 중 firebaseapp.com으로 끝나는 도메인을 복사해서 붙여넣어주어야 한다.
+- 이때, 도메인 앞에 https:// 입력을 필수로 해주어야 한다.
+
+**5. 로그인 폼 기본 구조 만들기**
+- 앞에서 설정했던 로그인 방법들을 사용하기 위해 다음과 같이 Auth.js 파일에 로그인 폼 기본 구조를 작성해준다.
+```jsx 
+const Auth = () => {
+  return (
+    <div>
+      <form>
+        <input type="email" placeholder="Email" required />
+        <input type="password" placeholder="Password" required />
+        <input type="submit" value="Log In" />
+      </form>
+      <div>
+        <button>Continue with Google</button>
+        <button>Continue with Github</button>
+      </div>
+    </div>
+  )
+};
+
+export default Auth;
+```
+
+**6. 로그인 폼이 상태를 업데이트 하도록 하기**
+- 작성해놓은 폼을 사용하기 위해서는 다음과 같이 코드를 작성해주어야 한다.
+- 이때 useState 함수는 상태를 만들어주고, onChange/onSubmit 함수는 이벤트를 연결해준다.<br>
+→ [관련 커밋 : Edit Auth.js](https://github.com/jsso16/nwitter/commit/dc891d5b58cd88bd490322bc4267260bbf7bad97)
+
+> 이메일, 비밀번호 인증 기능 사용해보기
+
+**1. 로그인과 회원가입 분리하기**
+- 로그인과 회원가입 기능을 분리하기 위해 다음과 같이 코드를 작성해준다.<br>
+→ [관련 커밋 : Edit Auth.js](https://github.com/jsso16/nwitter/commit/0ef878fe860b773a5f9b0154d455ecfbe232147b)
+
+**+) event.preventDefault()란?**
+- submit 이벤트는 이벤트 발생 시에 페이지를 새로고침하기 때문에 React의 상태가 초기화되는 현상이 발생한다.
+- 이러한 현상을 막기 위해 사용하는 것이 바로 event.preventDefault()이다.
+- event.preventDefault()를 이용하면 이벤트가 발생했을 때, onSubmit 함수의 이벤트의 기본값을 막아 새로고침이 발생하지 않는다.
+
 ## 04월 06일
 > Router 적용하기<br>
-> +) 04월 06일 README.md 참조
+> +) 03월 30일 README.md 참조
 
 **1. useState 함수 사용하기**
 - useState 함수를 사용하기 위해서는 아래와 같이 코드를 작성해주면 된다.
@@ -119,7 +238,7 @@ firebase.initializeApp(firebaseConfig);
 
 export const authService = firebase.auth();
 ```
-- 다음으로, 내보낸 serviceAuth를 사용하기 위해 아래의 코드를 작성해준다.
+- 다음으로, 내보낸 authService를 사용하기 위해 아래의 코드를 작성해준다.
 - 프로젝트 실행 시, 콘솔에 null이 출력된다면 auth 모듈이 제대로 실행되고 있는 것이다.
 ```jsx 
 ... 
