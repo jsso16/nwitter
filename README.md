@@ -2,13 +2,170 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 04월 27일
+> 이메일, 비밀번호 인증 기능 사용해보기
+
+**1. Firebase로 로그인과 회원가입 처리하기**
+- 로그인과 회원가입을 처리하기 위해 다음과 같이 코드를 작성해준다.
+- 이때 createUserWithEmailAndPassword 함수는 인자로 전달받은 이메일, 비밀번호를 Firebase의 데이터베이스에 저장한다.
+- 또한 signInWithEmailAndPassword 함수는 인자로 전달받은 이메일, 비밀번호를 Firebase의 데이터베이스에 전달하여 확인 후 로그인할 수 있게 해준다.
+```jsx
+import { authService } from "fbase";
+
+  ... 
+
+  const onSubmit = async(event) => {
+    event.preventDefault();
+
+    try {
+      let data;
+
+      if (newAccount) {
+        // Create New Account
+        data = await authService.createUserWithEmailAndPassword(email, password);
+      } else {
+        // Log In
+        data = await authService.signInWithEmailAndPassword(email, password);
+      }
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  ... 
+
+};
+
+export default Auth;
+```
+- onSubmit 함수에 추가된 async문과 await문은 로그인 또는 회원가입 인증이 처리된 이후에 앱을 실행되게 하는 역할을 한다.
+- 또한 try-catch문으로 로그인 또는 회원가입의 성공 또는 실패를 처리하도록 하여 데이터의 값을 출력하거나 오류값을 확인할 수 있다.
+
+**+) setPersistence란?**
+- setPersistence는 로그인 상태를 지속시켜주는 함수이다.
+- 로그인 상태 지속을 관리하는 방법에는 아래의 3가지가 있다.
+```
+- local: 웹 브라우저를 종료해도 로그인 유지(기본값)
+  → 웹 브라우저를 종료해도 로그인한 사용자의 정보를 기억할 수 있게 해주는 옵션
+- session: 웹 브라우저의 탭을 종료하면 로그아웃
+  → 기본적으로 가장 많이 사용
+- none: 새로고침하면 로그아웃
+  → 사용자 정보를 기억하지 않기 때문에 새로고침하면 로그인이 풀림
+```
+
+**2. 사용자 정보가 저장되어 있는 곳 살펴보기**
+-  local 옵션으로 저장한 사용자 로그인 정보는 브라우저 내에 있는 IndexedDB라는 데이터베이스에 사용자 정보를 저장한다.
+- 이 데이터베이스는 개발자 도구의 Application 탭에서 확인할 수 있다.<br>
+→ Storage > IndexedDB > firebaseLocalStorageDB... > firebaseLocalStorage
+- 이 외에도 value 항목을 펼치면 사용자 정보를 확인할 수 있다.
+
+> 로그인, 로그아웃하기
+
+**+) 로그인 처리 후 currentUser가 null인 이유는?**
+- 로그인 처리가 반영되었다면 currentUser가 null이 아닌 다른 값이어야 하지만, 콘솔을 확인해보면 아직 null인 것을 확인할 수 있다.
+- 이는 비동기 처리 과정으로 인해 발생하는 문제이다.
+- Firebase에서 회원가입, 로그인 처리를 마친 후 데이터를 보내주면 그 데이터를 받아 화면을 그려주기까지 시간 간격이 생기는데, 그 사이에 currentUser 값을 확인하면 null이 출력되는 것이다.
+- 따라서 이러한 문제는 React의 생명주기를 이용하면 해결할 수 있다.
+
+**1. 딜레이 직접 확인해보기**
+- 회원가입 후 로그인 처리 완료까지 걸리는 시간을 확인하기 위해서는 setInterval 함수를 사용하면 된다.  
+- setInterval 함수는 지정한 두 번째 인자로 지정한 시간 간격마다 첫 번째 인자로 전달한 코드를 실행한다.
+- setInterval 함수를 이용한 딜레이 확인은 아래와 같이 코드를 작성해주면 된다.
+```jsx
+setInterval(() => console.log(authService.currentUser), 2000);
+```
+
+**2. useEffect 함수 사용하기**
+- useEffect 함수는 React 컴포넌트가 렌더링 될 때마다 특정 작업을 실행하는 함수이다.
+- 이 프로젝트에서 useEffect 함수는 Firebase가 초기화되는 시점에 실행되어, 유저 상태에 따라 해당하는 화면을 보이게 설정해준다.
+- 이와 관련된 코드는 다음과 같이 작성해주면 된다.<br>
+→ [관련 커밋 : Edit App.js](https://github.com/jsso16/nwitter/commit/ccef50de2873e0272fe81e2f674cc19b0ec95f25)
+
+**3. 로그아웃하기**
+- 로그아웃 방법은 사용자 정보가 저장되어 있는 곳인 IndexedDB를 clear하면 된다.
+- 이를 실행하면 자동으로 회원가입 창으로 돌아온다.
+
+**4. 에러와 에러 메세지 Firebase로 처리하기**
+- Firebase는 에러와 에러 메세지가 이미 준비되어 있기 때문에 간편하게 적용할 수 있다.
+- 에러와 에러 메세지를 처리하기 위해서는 에러를 관리하기 위한 상태를 만들어주어야 한다.
+- 상태를 만들어주기 위한 코드는 아래와 같다.
+```jsx
+const [error, setError] = useState("");
+```
+
+**5. 일부러 중복 회원가입 에러 발생시키기**
+- 앞에서 잠깐 이야기했듯이 onSubmit 함수에는 try-catch문으로 에러를 콘솔에 출력하는 코드가 들어 있다.
+- 따라서 에러 메세지를 확인하기 위해 일부러 중복 회원가입을 통해 에러를 발생시킨다.
+- 이후 콘솔을 확인하면 일반적인 error를 출력하고 있어 원하는 메세지가 나오지 않는 것을 확인할 수 있다.
+- 이때 error는 Firebase가 에러와 관련된 여러 내용이 자세히 적혀있는 객체를 의미한다.
+
+**6. error.message 화면에 출력하기**
+- 우리가 원하는 에러 메세지는 error.message에 들어있다.
+- 이를 화면에 출력하기 위해서는 setError 함수에 error.message를 전달하여 error 상태를 변경해야 한다.
+- error.message를 출력하는 코드는 아래와 같다.
+```jsx
+
+  ... 
+
+  const onSubmit = async(event) => {
+    event.preventDefault();
+
+    try {
+    
+    ... 
+
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  return (
+    
+    ... 
+
+      <div>
+        <button>Continue with Google</button>
+        <button>Continue with Github</button>
+      </div>
+      {error}
+    </div>
+  )
+    
+  ... 
+
+```
+- 이렇게 코드를 수정하고 에러를 발생시켜야 사용자가 에러 상황을 바로 알 수 있다.
+
+**7. 회원가입, 로그인 토글 버튼 적용하기**
+- 로그인 여부에 따라 로그인, 회원가입이 전환되도록 버튼을 만들어주기 위해서는 토글 버튼을 적용해주어야 한다.
+- 토글 버튼 적용하기 위한 코드는 다음과 같다.<br>
+→ [관련 커밋 : Edit Auth.js](https://github.com/jsso16/nwitter/commit/c70a6afb2d5395a4b8175e748d2a6da2b894178b)
+- 이렇게 usestate 함수를 이용하면 간단하게 토글 버튼을 만들 수 있다.
+
+> 소셜 로그인 추가하기
+
+**1. 소셜 로그인 버튼에 name 속성 사용하기**
+- 소셜 로그인을 구별하기 위해서는 event.target.name 속성을 사용해주어야 한다.
+- name 속성을 사용하기 위해서는 다음과 같이 코드를 작성해준다.<br>
+→ [관련 커밋 : Edit Auth.js](https://github.com/jsso16/nwitter/commit/47a98fe8ba9419dfcf9d79888d61d5eb512097b9)
+- 이를 통해 OnSocialClick 함수에서 소셜 로그인 버튼을 누를 때마다 발생하는 이벤트의 name 속성값이 콘솔창에 출력되는 것을 확인할 수 있다.
+
+**2. 소셜 로그인을 위해 firebaseInstance 추가하기**
+- 소셜 로그인을 사용하기 위해서는 provider가 필요하지만, export한 authService에는 provider가 없다.
+- 따라서 provider를 사용하기 위해서는 firebase 전체를 export 해야 한다.
+- 이때 Firebase는 아래와 같이 firebaseInstance 이름으로 export 해주어야 한다.
+```jsx
+export const firebaseInstance = firebase;
+```
+
 ## 04월 13일
 > Firebase 오류 해결하기
 
 **1. Firebase 관련 오류 해결하기**
 - 지난 강의 시간에 firebase와 관련된 다양한 오류들이 발생하였다.
 - 이 프로젝트의 경우, firebase의 import 경로에 compat를 추가해주지 않아 오류가 발생하였다.
-- 따라서 아래와 같이 코드를 수정하여 오류를 해결하였다.<br>
+- 따라서 다음과 같이 코드를 수정하여 오류를 해결하였다.<br>
 → [관련 커밋 : Edit fbase.js](https://github.com/jsso16/nwitter/commit/41c483631cae92733ed776207d885417f4703dec)
 
 **2. Firebase 버전 낮추기**
