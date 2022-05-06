@@ -2,6 +2,150 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 05월 04일
+> 소셜 로그인 추가하기
+
+**1. provider 적용하기**
+- provider를 이용하여 소셜 로그인 서비스를 처리할 수 있다.
+- 소셜 로그인 서비스를 사용하기 위해서는 아래와 같이 provider에 소셜 로그인 서비스 제공 업체를 대입하면 된다.
+```jsx
+import { authService, firebaseInstance } from "fbase";
+
+  ...
+
+  const onSocialClick = (event) => {
+    const {
+      target: {name}
+    } = event;
+    
+    let provider;
+
+    // 소셜 로그인이 구글일 때
+    if (name === "google") {
+      provider = new firebaseInstance.auth.GoogleAuthProvider();
+    // 소셜 로그인이 Github일 때
+    } else if (name === "github") {
+      provider = new firebaseInstance.auth.GithubAuthProvider();
+    }
+  };
+
+  ...
+
+```
+- 이렇게 대입한 provider에는 소셜 로그인 업체 이름, 현재 사용자 정보, 소셜 로그인 요청 주소 등과 같은 값들이 들어있다.
+
+**2. 소셜 로그인 완성하기**
+- signInWithPopup 함수를 사용하면 팝업창을 띄워 소셜 로그인을 사용할 수 있다.
+- 이때 signInWithPopup 함수는 비동기 작업이므로 async-await문을 사용해야 한다.
+- 소셜 로그인 기능을 완성한 코드는 다음과 같다.<br>
+→ [관련 커밋 : Edit Auth.js](https://github.com/jsso16/nwitter/commit/2221d5d279a2149851802509c9612365e77edc0b)
+
+> Navigation 추가하고 로그아웃 처리하기
+
+**1. Navigation 컴포넌트 만들고 Router 추가하기**
+- 사이트 간 이동이 가능하도록 하려면 Navigation을 추가해주어야 한다.
+- 이를 구현하기 위한 코드는 아래와 같다.
+```jsx
+const Navigation = () => {
+  return <nav>This is Navigation!</nav>
+};
+
+export default Navigation;
+```
+- 이후 Navigation 컴포넌트를 사용하기 위해서는 Router와 연결해주어야 한다.
+- 이때 회원가입이나 로그인 페이지에서는 Navigation이 보일 필요가 없으므로 && 연산자를 이용하여 isLoggedIn이 true인 경우에만 Navigation이 보이도록 처리한다.
+```jsx
+... 
+
+import Navigation from "./Navigation";
+
+const AppRouter = ({ isLoggedIn }) => {
+
+  return(
+    <Router>
+      {isLoggedIn && <Navigation />}
+
+      ... 
+
+    </Router>
+  )
+};
+
+export default AppRouter;
+```
+
+**2. Navigation에 Link 추가하기**
+- Navigation에 Link를 사용하면 링크를 통해 페이지 이동이 가능하게 해준다.<br>
+→ [관련 커밋 : Add Navigation.js](https://github.com/jsso16/nwitter/commit/7c6232164a651683a4faab858ad1dd67a43930ca)
+- 그러나 위 코드처럼 Link만 추가해준다면 링크 클릭 시 주소 표시줄의 변화만 있을 뿐 실제로 컴포넌트를 렌더링하지는 않는다.
+- 따라서 링크 클릭 시 해당하는 컴포넌트를 실제로 렌더링하기 위해서는 다음과 같이 Router를 수정해주어야 한다.
+```jsx
+... 
+
+import Profile from "routes/Profile";
+
+const AppRouter = ({ isLoggedIn }) => {
+
+  return(
+
+      ... 
+
+          <>
+            <Route exact path="/">
+              <Home />
+            </Route>
+            <Route exact path="/profile">
+              <Profile />
+            </Route>
+          </>
+
+      ... 
+      
+  )
+};
+
+export default AppRouter;
+```
+
+**3. 로그아웃까지 마무리하기**
+- 지금까지는 로그아웃을 수동으로 진행해왔지만, 이를 더욱 편리하게 진행하기 위해 버튼을 생성해준다.
+- 로그아웃을 처리하기 위해 사용하는 SignOut 함수는 실행되면 IndexedDB에 있는 정보를 알아서 비우고, 로그아웃 처리까지 해준다.<br>
+→ [관련 커밋 : Edit Profile.js](https://github.com/jsso16/nwitter/commit/01451a7a099209eb0c2f49c254d944d93dd272d9)
+
+**4. Redirect로 로그아웃 후 주소 이동하기**
+- 프로젝트를 실행시키면 로그아웃 처리는 성공했지만 주소 표시줄은 여전히 그대로인 것을 확인할 수 있다.
+- 이를 해결하기 위한 방법에는 2가지가 있는데, 그 중 1가지 방법이 Redirect를 사용하는 것이다.
+- Redirect는 from props에 있는 값을 조건으로 생각하여 to props에 있는 값으로 주소를 이동시켜 준다.<br>
+→ [관련 커밋 : Edit Router.js](https://github.com/jsso16/nwitter/commit/b57d8f941daca51578ae3315c0e298d0abbe176a)
+- 즉, 상단의 코드를 예시로 들면 어떤 주소든(from props에 있는 값: *) Home 컴포넌트(to props에 있는 값: /)로 이동시켜주는 것이다.
+
+**5. useHistory로 로그아웃 후 주소 이동하기**
+- 위에서 말했던 해결 방법 중 2번째 방법이 바로 useHistory를 이용하는 것이다.
+- 이 방법은 Router가 아닌 자바스크립트를 이용하여 Redirect를 한다.
+- 이때 useHistory는 push라는 함수를 이용하여 주소를 이동시켜 준다.<br>
+→ [관련 커밋 : Edit Router.js & Profile.js](https://github.com/jsso16/nwitter/commit/27606382b965bb3434f3c9cca27b7819343b49f4)
+
+> 트윗 등록 기능 만들기
+
+**1. 트윗을 위한 폼 만들기**
+- 트윗을 위한 폼을 만들기 위해서는 다음과 같이 코드를 작성해주어야 한다.
+- 이때 입력받을 텍스트를 상태로 관리하기 위해 useState와 onChange 함수를 사용하였고, onSubmit 함수로 새로고침을 방지하기 위해 원래의 이벤트가 발생하지 않도록 처리하였다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/a20d3cd368fec967e2fa38dd96a9b4d430c86afe)
+
+**2. 트윗을 위한 Firebase 데이터베이스 생성하기**
+- Firebase Database를 사용하려면 데이터베이스를 생성해주어야 한다.
+- Firebase 데이터베이스 생성 방법은 아래와 같다.
+```
+1. Firebase 홈페이지 접속하기(+ 홈페이지 링크는 하단의 03월 30일 README.md 참조)
+2. 우측 상단의 콘솔로 이동 클릭 후 프로젝트 선택하기
+3. 좌측 메뉴의 Firebase Database 클릭하기
+4. 데이터베이스 만들기 버튼 클릭하기
+5. Cloud Firestore의 보안 규칙에서 테스트 모드에서 시작 선택 후 다음 버튼 클릭하기
+6. Cloud Firestore 위치 설정하기
+7. 사용 설정 버튼 클릭하기
+```
+- Cloud Firestore 위치 설정 시, 본인이 살고 있는 곳에서 가까운 곳을 선택하는 것이 좋다.
+
 ## 04월 27일
 > 이메일, 비밀번호 인증 기능 사용해보기
 
