@@ -8,9 +8,10 @@ const Home = () => {
   const getNweets = async() => {
     const dbNweets = await dbService.collection("nweets").get();
 
-    dbNweets.forEach((document) => 
-      setNweets((prev) => [document.data(), ...prev])
-    );
+    dbNweets.forEach((document) => {
+      const nweetObject = {...document.data(), id: document.id}
+      setNweets((prev) => [nweetObject, ...prev])
+    });
   };
 
   useEffect(() => {
