@@ -2,6 +2,92 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 05월 11일
+> 트윗 등록 기능 만들기
+
+**1. 샘플 데이터 저장해보기**
+- Firebase Database는 NoSQL 기반의 데이터베이스이다.
+- 이러한 데이터베이스는 컬렉션과 문서라는 체계를 가지고 있다.
+- 이때 컬렉션은 폴더를, 문서는 컬렉션 안에 포함되는 일종의 텍스트 문서를 의미한다.
+- 샘플 데이터 저장 방법은 아래와 같다.
+```
+1. Cloud Firestore 화면으로 이동하기(+ 자세한 화면 이동 방법은 05월 04일 README.md 참조)
+2. + 컬렉션 시작 클릭하기
+3. 컬렉션 ID 지정 후 다음 버튼 클릭하기
+4. 자동 ID 버튼을 클릭하여 문서 ID 지정해주기
+5. 필드와 유형, 값을 입력한 후 저장 버튼 누르기
+```
+- 이렇게 완성한 데이터는 각 항목을 누르면 조회나 수정, 삭제가 가능하다.
+
+**2. React에서 Firebase Database 사용해보기**
+- React에서 Firebase Database를 사용하기 위해서는 아래의 두 코드를 추가적으로 작성해주어야 된다.
+```jsx
+import "firebase/compat/firestore";
+```
+```jsx
+export const dbService = firebase.firestore();
+```
+- 이때, React 서버가 실행되어 있는 중이라면 Firebase 설정이 제대로 적용될 수 있도록 반드시 React 서버를 다시 실행해주어야 한다.
+
+**3. Firestore에 데이터 저장하기**
+- Firestore에 데이터를 저장하는 기능은 CRUD에서 Create(생성)을 의미한다.
+- 기능을 구현한 코드는 아래와 같다.
+```jsx
+import { dbService } from "fbase";
+
+... 
+
+  const onSubmit = async(event) => {
+    event.preventDefault();
+    // nweets 컬렉션 생성 후 해당 컬렉션에 문서 생성
+    await dbService.collection("nweets").add({  
+      text: nweet,
+      createdAt: Date.now()
+    });
+    // nweet 상태를 빈 문자열로 초기화
+    setNweet("");
+  };
+
+  ... 
+
+```
+- 이때, dbService.collection("nweets").add(...)는 Promise를 반환하므로 async-await문을 사용하여야 한다.
+
+**4. Firestore에서 문서 읽어오기**
+- Firestore의 컬렉션과 그 안에 있는 문서들을 읽어오는 기능은 CRUD에서 Read(읽기)를 의미한다.
+- 문서를 읽어오기 위해서는 get 함수를 사용하는데, 이는 문서의 개수에 따라 여러 번 실행해야 할 수 있으므로 add 함수가 아닌 forEach 함수를 함께 사용하여야 한다.
+- 기능을 구현한 코드는 다음과 같다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/d2f078c7bf2cdf23788e43b38d404e603d7f8986)
+- 위 코드를 보면 컴포넌트가 모두 mount된 이후에 문서들을 가져오려고 useEffect를 사용한 것을 볼 수 있다.
+- 이때 주의할 점은 async-await문을 쓰는 함수가 useEffect에 포함되어 있으면, 그 함수는 따로 정의하고 useEffect에서 그 함수를 실행시켜야 한다는 것이다.
+
+**+) 스냅샷이란?**
+- 코드 실행 후 콘솔에 출력된 내용을 보면 게시물의 목록이 아닌 복잡한 데이터만 보이는 것을 확인할 수 있다.
+- 이러한 데이터가 바로 스냅샷이며, 게시글의 목록은 이 스냅샷 안에 담겨있다.
+- 즉, 스냅샷은 Firestore의 원본을 사진 찍듯이 찍어 보내주는 것을 의미한다.
+- 이를 얻기 위해서는 아래와 같이 forEach 함수를 사용하여 코드를 작성해주어야 한다.
+- 왜냐하면 스냅샷은 다시 여러 개의 문서 스냅샷으로 구성되어 있는데, 이를 순회하기 위해서는 forEach 함수를 사용해주어야 하기 때문이다.
+```jsx
+dbNweets.forEach((document) => console.log(document.data()));
+```
+
+**5. 받은 데이터로 게시물 목록 만들어보기**
+- 데이터를 이용하여 게시물 목록을 만들기 위해서는 다음과 같이 코드를 작성해주어야 한다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/dca26fa6cde33f3efd89197265f1bac8bba051c7)
+- 이때 유의해야 할 점은 forEach 함수는 스냅샷의 문서 스냅샷을 하나씩 순회하면서 데이터를 추가해주기 때문에 데이터가 하나씩 출력된다는 것이다.
+- 따라서 데이터를 쌓고 싶다면 아래와 같이 전개 구문을 이용하여 코드를 작성해주면 간편하게 이전 상태와 현재 데이터를 합칠 수 있다.
+```jsx
+dbNweets.forEach((document) => 
+  setNweets((prev) => [document.data(), ...prev])
+);
+```
+
+**6. 트윗 아이디 저장하기**
+- CRUD의 나머지 기능인 Update(업데이트)와 Delete(삭제)를 구현하기 위해서는 아이디 값이 필요하다.
+- 이때 아이디는 Firestore에서 데이터를 구별할 때 사용한다.
+- 이러한 아이디를 저장하는 코드는 다음과 같다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/a390fbcd8ded972e7155f73c0d4228034a3cc303)
+
 ## 05월 04일
 > 소셜 로그인 추가하기
 
@@ -138,7 +224,7 @@ export default AppRouter;
 ```
 1. Firebase 홈페이지 접속하기(+ 홈페이지 링크는 하단의 03월 30일 README.md 참조)
 2. 우측 상단의 콘솔로 이동 클릭 후 프로젝트 선택하기
-3. 좌측 메뉴의 Firebase Database 클릭하기
+3. 좌측 메뉴의 Firestore Database 클릭하기
 4. 데이터베이스 만들기 버튼 클릭하기
 5. Cloud Firestore의 보안 규칙에서 테스트 모드에서 시작 선택 후 다음 버튼 클릭하기
 6. Cloud Firestore 위치 설정하기
