@@ -80,14 +80,14 @@ console.log(userObj);
 → [관련 커밋 : Edit Nweet.js & Home.js](https://github.com/jsso16/nwitter/commit/15437bc28553ca6dac56971568f62a182a5704bf)
 
 **4. Firestore에서 uid 바꾸기**
-- Firestore에서 아무 트윗의 문서의 createId를 바꾸면 게시물의 버튼이 사라지는 것을 볼 수 있다.
+- Firestore에서 아무 트윗의 문서를 눌러 creatorId를 바꿔주면 게시물의 버튼이 사라지는 것을 볼 수 있다.
 - 이러한 과정을 통해 사용자는 본인의 게시물만 수정 및 삭제가 가능한 것을 확인할 수 있다.
 
 **5. 버튼에 삭제 기능 추가하기**
 - 삭제 기능을 구현하기 위해서는 문서의 고유값인 아이디를 이용하여야 한다.
 - 따라서 다음과 같이 코드를 작성하여 삭제 기능을 구현해준다.<br>
 → [관련 커밋 : Edit Nweet.js](https://github.com/jsso16/nwitter/commit/28c50efb3d620e03cb83e990e89bdde66c9b6090)
-- 이떄, onDeleteClick 함수를 이용해 삭제 관련 안내 메세지를 띄워주고, window.confirm(...)을 이용해 true, false 값을 반환하여 트윗 삭제 여부를 결정한다. 
+- 이때, onDeleteClick 함수를 이용해 삭제 관련 안내 메세지를 띄워주고, window.confirm(...)을 이용해 true, false 값을 반환하여 트윗 삭제 여부를 결정한다. 
 - 또한 delete 함수를 이용하여 실질적인 삭제 기능을 구현할 수 있다.
 - 이뿐만 아니라 아래 코드와 같이 템플릿 리터럴을 사용하면 변수를 더욱 편리하게 작성할 수 있다.
 ```jsx
