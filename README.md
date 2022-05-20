@@ -2,6 +2,98 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 05월 18일
+> 트윗 등록 기능 만들기
+
+**1. 트윗 목록 출력해보기**
+- 게시물 목록을 출력하기 위해서는 다음과 같이 코드를 작성해주어야 한다.
+- 이때, map 함수는 배열을 순회하기 위한 ES6 함수이다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/04e5cce8a878fe57223d46cb4aa16322e650246e)
+
+**2. 트윗마다 작성자 표시하기**
+- 게시물 수정, 삭제 등의 기능을 구현하기 위해서는 게시물마다 작성자를 구분해주어야 한다.
+- 따라서 게시물마다 작성자를 구분해주기 위해서는 사용자의 정보가 필요하다.
+- 이러한 사용자의 정보를 얻기 위해서는 다음과 같이 코드 작업을 진행해주어야 한다.<br>
+→ [관련 커밋 : Edit User files](https://github.com/jsso16/nwitter/commit/fdd830264b0d0baab6f0a926fb8df6513e6ccff9)
+- 이렇게 코드를 구현하면 아래의 코드를 통해 콘솔에서 uid 값을 확인할 수 있는데, 이 uid가 바로 작성자를 구분해주는 사용자 아이디이다.
+```jsx
+console.log(userObj);
+```
+- 이렇게 확인한 uid는 creatorId 항목에 입력한 후, add 함수에 객체로 넣어주어 Firebase에 데이터를 저장해준다.
+
+> 실시간 데이터베이스로 트윗 목록 보여주기
+
+**1. getNweets 함수 삭제하기**
+- 현재 사용하고 있는 get 함수는 처음에 화면을 렌더링할 때만 실행되기 때문에 화면을 새로고침하지 않으면 새로운 게시물이 반영되지 않는다.
+- 따라서 이러한 과정 없이 실시간으로 게시물 목록을 출력하기 위해서는 실시간 데이터베이스를 사용해야 한다.
+- 실시간 데이터베이스를 사용하게 되면 서버와 데이터를 주고 받거나 에러, 결과 처리를 직접 할 필요가 없으며, async-await문을 사용하지 않아도 된다.
+- 이러한 실시간 데이터베이스를 사용하기 위해서는 먼저 기존에 사용하였던 getNweets 함수를 삭제해주어야 한다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/82912e82ac3b5b010cea38e05e22c9ade1d918a7)
+
+**2. onSnapshot 함수 적용하기**
+- 실시간 데이터베이스를 도입하기 위해서는 onSnapshot 함수를 사용하면 된다.
+- get 함수와 사용 방법이 같으며, 문서 스냅샷들은 snapshot.docs와 같이 얻어낼 수 있다.
+- onSnapshot 함수를 적용한 코드는 아래와 같다. 
+```jsx
+  ...
+
+  useEffect(() => {
+    dbService.collection("nweets").onSnapshot((snapshot) => {
+      const newArray = snapshot.docs.map((document) => ({
+        id: document.id,
+        ...document.data(),
+      }));
+      setNweets(newArray);
+    });
+  }, []);
+
+  ...
+```
+- 이처럼 forEach 함수 대신 map 함수를 적용하면 문서 스냅샷에서 원하는 값만 뽑아 다시 배열화할 수 있기 때문에 코드 효율이 높아진다.
+
+> 트윗 삭제 기능 만들기
+
+**1. 트윗 컴포넌트 분리하기**
+- 컴포넌트의 크기를 효율적으로 줄이기 위해서는 컴포넌트를 분리해주는 것이 좋다.
+- 따라서 컴포넌트를 분리하기 위해서는 다음과 같이 코드를 수정해주어야 한다.<br>
+→ [관련 커밋 : Add Nweet.js & Edit Home.js](https://github.com/jsso16/nwitter/commit/583f8b7db5dc456512474eedd9977c1c0ada5923)
+
+**2. 트윗 수정, 삭제 버튼 추가하기**
+- 수정, 삭제 버튼 추가는 아래와 같다.
+```jsx
+  ...
+
+  return (
+    <div>
+      <h4>{nweetObj.text}</h4>
+      <button>Delete Nweet</button>
+      <button>Edit Nweet</button>
+    </div>
+  )
+
+  ...
+```
+
+**3. 트윗 작성자만 게시글 수정 및 삭제 가능하게 하기**
+- 트윗 작성자만 게시글 수정 및 삭제가 가능하게 하려면 다음과 같이 코드를 작성해주어야 한다.
+- 이때, && 연산자를 이용해 게시물의 uid와 작성자의 uid가 일치할 경우에만 버튼이 나타나도록 처리하였다.<br>
+→ [관련 커밋 : Edit Nweet.js & Home.js](https://github.com/jsso16/nwitter/commit/15437bc28553ca6dac56971568f62a182a5704bf)
+
+**4. Firestore에서 uid 바꾸기**
+- Firestore에서 아무 트윗의 문서의 createId를 바꾸면 게시물의 버튼이 사라지는 것을 볼 수 있다.
+- 이러한 과정을 통해 사용자는 본인의 게시물만 수정 및 삭제가 가능한 것을 확인할 수 있다.
+
+**5. 버튼에 삭제 기능 추가하기**
+- 삭제 기능을 구현하기 위해서는 문서의 고유값인 아이디를 이용하여야 한다.
+- 따라서 다음과 같이 코드를 작성하여 삭제 기능을 구현해준다.<br>
+→ [관련 커밋 : Edit Nweet.js](https://github.com/jsso16/nwitter/commit/28c50efb3d620e03cb83e990e89bdde66c9b6090)
+- 이떄, onDeleteClick 함수를 이용해 삭제 관련 안내 메세지를 띄워주고, window.confirm(...)을 이용해 true, false 값을 반환하여 트윗 삭제 여부를 결정한다. 
+- 또한 delete 함수를 이용하여 실질적인 삭제 기능을 구현할 수 있다.
+- 이뿐만 아니라 아래 코드와 같이 템플릿 리터럴을 사용하면 변수를 더욱 편리하게 작성할 수 있다.
+```jsx
+ const data = await dbService.doc(`nweets/${nweetObj.id}`).delete();
+```
+
 ## 05월 11일
 > 트윗 등록 기능 만들기
 
