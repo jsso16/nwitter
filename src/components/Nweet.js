@@ -18,12 +18,19 @@ const Nweet = ({ nweetObj, isOwner }) => {
 
   const toggleEditing = () => setEditing((prev) => !prev);
 
+  const onChange = (event) => {
+    const {
+      target: {value}
+    } = event;
+    setNewNweet(value);
+  };
+
   return (
     <div>
       {editing ? (
         <>
           <form>
-            <input value={newNweet} required />
+            <input onChange={onChange} value={newNweet} required />
           </form>
           <button onClick={toggleEditing}>Cancel</button>
         </>
