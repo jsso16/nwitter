@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Nweet from "components/Nweet";
 
 const Home = ({ userObj }) => {
-  // console.log(userObj);
   const [nweet, setNweet] = useState("");
   const [nweets, setNweets] = useState([]);
 
@@ -29,11 +28,17 @@ const Home = ({ userObj }) => {
 
   const onChange = (event) => {
     event.preventDefault();
-    
     const {
       target: {value}
     } = event;
     setNweet(value);
+  };
+
+  const onFileChange = (event) => {
+    const {
+      target: {files}
+    } = event;
+    const theFile = files[0];
   };
 
   return (
@@ -46,7 +51,7 @@ const Home = ({ userObj }) => {
           placeholder="What's on your mind?"
           maxLength={120}
         />
-        <input type="file" accept="image/*" />
+        <input type="file" accept="image/*" onChange={onFileChange} />
         <input type="submit" value="Nweet" />
       </form>
       <div>
