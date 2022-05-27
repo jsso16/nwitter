@@ -2,6 +2,88 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 05월 25일
+> 트윗 수정 기능 만들기
+
+**1. 수정 기능을 위한 useState 추가하기**
+- 게시물을 수정하기 위해서는 수정 버튼 클릭 시 기존 트윗을 수정할 수 있는 입력창과 확인, 취소와 같은 버튼이 필요하다.
+- 이러한 기능들을 구현하기 위해서는 다음과 같이 코드를 작성해주어야 한다.<br>
+→ [관련 커밋 : Edit Nweet.js](https://github.com/jsso16/nwitter/commit/eca518745a64078cf30948877d381ffe5a1a7b8c)
+
+**2. 입력란에 onChange 작업하기**
+- 입력창에 입력 결과를 반영하기 위해서는 onChange props, 함수 작업을 진행해주어야 한다.
+- 이 작업을 진행하면 텍스트를 입력할 때마다 onChange 함수의 value 인자로 입력값이 넘어가고, 이를 newNweet에 반영하므로 입력한 텍스트가 바로 보이게 된다.<br>
+→ [관련 커밋 : Edit Nweet.js](https://github.com/jsso16/nwitter/commit/21ef094adeaa067340a3ca7367f31aff97db2c57)
+
+**3. Firestore에 새 입력값 반영하기**
+- 수정 기능을 구현하기 위해서는 Firestore에 새 입력값을 반영해주어야 한다.
+- 이를 위해서는 form 엘리먼트와 onSubmit 함수가 필요하며, onSubmit 함수는 실행될 때 트윗 아이디와 트윗에 입력한 텍스트를 Firestore로 보내주어야 한다.<br>
+→ [관련 커밋 : Edit Nweet.js](https://github.com/jsso16/nwitter/commit/5edd7eb896dbea350a147d877115add260d79c1b)
+- 수정 역시 삭제와 마찬가지로 문서 자체를 수정하는 것이기 때문에 doc(...).update(...)와 같이 작성해주면 된다.
+- 이때 주의점은 업데이트를 하고 싶은 값을 {text: newNweet}와 같은 객체 형태로 전달해야 업데이트가 제대로 실행된다.
+
+> 사진 미리보기 기능 만들기
+
+**1. 파일 첨부 양식 만들기**
+- 사진의 경우, Firestore에 저장할 수 없기 때문에 Firebase Storage를 사용해야 한다.
+- Firebase Storage는 파일을 저장하고 불러오는 저장소 역할을 하므로, 이를 이용하면 사진 저장 기능을 구현할 수 있다.
+- 따라서 위 기능을 구현하기 위해서는 먼저 파일 첨부 양식을 만들어주어야 한다.
+- 파일 첨부 양식은 아래의 코드를 추가해주기만 하면 된다.
+```jsx
+<input type="file" accept="image/*" />
+```
+- 이때 input 엘리먼트는 type 속성에 따라 다양한 방법으로 사용할 수 있기 때문에 파일을 선택할 수 있게 하기 위해서는 type="file" 속성을 사용하여야 한다.
+- 또한 사진만 등록하고 싶을 때는 accept 속성을 사용하여 첨부 파일의 종류를 제한할 수 있다.
+ 
+**2. 화면 정리하기**
+- 화면을 깔끔하게 정리하기 위해서 Firebase의 모든 게시물과 이전에 작성했던 Footer 엘리먼트를 삭제해준다.
+```jsx
+<footer>&copy; {new Date().getFullYear()} Nwitter</footer>
+```
+
+**3. 첨부 파일 정보 출력해보기**
+- 파일을 선택하면 input 엘리먼트에 파일 이벤트가 발생하는 것을 확인할 수 있다.
+- 파일 이벤트의 경우, event.target.value를 사용하면 파일 경로가 출력되기는 하지만 웹 브라우저 보안 정책 상 실제 경로를 표시하면 안되므로 상세 경로가 숨겨진 상태로 출력된다.
+- 따라서 이를 해결하기 위해서는 event.target.files와 같이 files라는 파일 배열을 참고해야 한다.
+- 이때, 아래의 코드를 추가해주면 콘솔에 FileList가 출력되면서 파일 관련 정보가 들어있는 것을 확인할 수 있다.
+```jsx
+console.log(event.target.files);
+```
+- 또한 다음과 같이 코드를 작성해주면 theFile에 파일 관련 정보가 저장된다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/1e099c46ad251de1e2ab13a74d1942da3acc99d8)
+- files가 배열인 이유는 여러 개의 파일 선택 시, 배열로 파일 정보를 보여주어야 하기 때문에 input 엘리먼트의 multiple 속성에 대비하기 위한 것이다.
+
+**4.웹 브라우저에 사진 출력해보기**
+- 웹 브라우저에 사진을 출력하기 위해서는 브라우저 API인 FileReader를 사용하면 된다.
+- FileReader는 new FileReader()와 같이 new 키워드와 함께 사용해야 한다.
+- 따라서 아래와 같이 코드를 작성해주면 reader.과 같이 입력하여 FileReader에서 제공하는 함수를 사용할 수 있다.
+```jsx
+const reader = new FileReader();
+reader.readAsDataURL(theFile);
+```
+- 이때, readAsDataURL 함수는 파일 정보를 인자로 받아서 파일 위치를 URL로 반환해준다.
+- 이렇게 반환한 파일의 URL과 img 엘리먼트를 이용하여 사진을 웹 브라우저에 출력해주는 것이다.
+- 그러나 readAsDataURL 함수는 단순히 호출하는 방식으로 사용할 수 없다.
+- 이 함수는 React 생명주기 함수처럼 파일 선택 후 '웹 브라우저가 파일을 인식하는 시점', '웹 브라우저가 파일 인식이 끝난 시점'등을 포함하고 있어서 시점까지 관리해주어야 URL을 얻을 수 있기 때문이다.
+```jsx
+reader.onloadend = (finishedEvent) => {
+  console.log(finishedEvent);
+}
+```
+- 따라서 위와 같이 코드를 수정해주어야 하는데, onloadend는 readAsDataURL 함수에 전달할 인자의 결과값이 나온 다음 상황을 감지하여 그 때 생긴 이벤트 값을 사용할 수 있게 해준다.
+- 이러한 onloadend에서 콘솔의 다양한 이벤트 중 currentTarget 항목을 펼치면 result 항목의 URL을 확인할 수 있는데, 이를 복사하여 주소 창에 입력해주면 이미지를 확인할 수 있다.
+
+**5.사진 미리 보기 구현하기**
+- 이렇게 얻어낸 URL을 사용하여 사진 미리 보기 기능을 구현할 수 있다.
+- 이때 사진 미리 보기 기능은 Firebase에 사진을 저장하기 전에 확인하는 기능이므로 다음과 같이 상태만 관리해주면 된다.
+- 또한 구조 분해 할당을 사용하여 currentTarget 항목의 result 항목 값을 얻어왔으며, attachment가 있는 경우에만 이미지를 출력할 수 있도록 처리해주었다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/417a37e361a0819476a6d5543919b06bbfcc9d6b)
+
+**6.파일 선택 취소 버튼 만들기**
+- 파일 선택을 취소할 수 있게 하기 위해 다음과 같이 취소 버튼을 생성해준다.
+- 이때, 파일 취소 적용을 위해 onClearAttachment 함수를 추가하여 onClick props로 함수를 전달하고, setAttachment를 ""로 지정해준다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/b8720bf0ea47980d19e662d45eaff454deb1fa2e)
+
 ## 05월 18일
 > 트윗 등록 기능 만들기
 
