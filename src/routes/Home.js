@@ -28,7 +28,7 @@ const Home = ({ userObj }) => {
     // setNweet("");
     const attachmentRef = storageService.ref().child(`$(userObj.uid)/${uuidv4()}`);
     const response = await attachmentRef.putString(attachment, "data_url");
-    console.log(response);
+    console.log(await response.ref.getDownloadURL());
   };
 
   const onChange = (event) => {
