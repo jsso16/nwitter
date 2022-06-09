@@ -1,4 +1,4 @@
-import { dbService } from "fbase";
+import { dbService, storageService } from "fbase";
 import { useState, useEffect } from "react";
 import Nweet from "components/Nweet";
 import { v4 as uuidv4 } from "uuid";
@@ -26,6 +26,7 @@ const Home = ({ userObj }) => {
     //   creatorId: userObj.uid
     // });
     // setNweet("");
+    storageService.ref().child(`$(userObj.uid)/${uuidv4()}`);
   };
 
   const onChange = (event) => {
