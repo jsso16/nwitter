@@ -10,7 +10,7 @@ const Profile = ({ userObj }) => {
   };
 
   const getMyNweets = async() => {
-    const nweets = await dbService.collection("nweets").where("creatorId", "==", userObj.uid);
+    const nweets = await dbService.collection("nweets").where("creatorId", "==", userObj.uid).orderBy("createdAt", "asc");
   };
 
   useEffect(() => {}, []);
