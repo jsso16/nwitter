@@ -26,7 +26,9 @@ const Home = ({ userObj }) => {
     //   creatorId: userObj.uid
     // });
     // setNweet("");
-    storageService.ref().child(`$(userObj.uid)/${uuidv4()}`);
+    const attachmentRef = storageService.ref().child(`$(userObj.uid)/${uuidv4()}`);
+    const response = await attachmentRef.putString(attachment, "data_url");
+    console.log(response);
   };
 
   const onChange = (event) => {
