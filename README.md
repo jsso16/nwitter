@@ -2,6 +2,155 @@
 Twitter Clone 2022<br>
 교재 참고 자료 : https://github.com/easysIT/nwitter
 
+## 06월 08일
+> 사진 저장 기능 만들기
+
+**1. Firebase Storage import하기**
+- 사진 또는 동영상 같은 파일을 저장하기 위해서는 Firebase Storage를 사용해야 한다.
+- Firebase Storage는 사진, 동영상과 같이 크기가 큰 파일을 저장했다가 필요할 때 꺼내서 사용할 수 있게 해주는 곳이다.
+- 이러한 Firebase Storage를 사용하기 위해서는 아래의 두 코드를 추가해주어야 한다.
+```jsx
+import "firebase/compat/storage";
+```
+```jsx
+export const storageService = firebase.storage();
+```
+- 이때, 반드시 코드 입력 후에는 npm start로 서버를 다시 구동해주어야 한다.
+
+**2. Storage 간단하게 사용해 보기**
+- Storage를 간단하게 사용해보기 위해서는 아래의 코드를 주석 처리 해주어야 한다.
+- 이렇게 코드를 주석 처리해주면 onSubmit 함수의 Firestore 코드가 실행되지 않기 때문에 Storage 관련 코드에 더욱 집중할 수 있다.
+```jsx
+await dbService.collection("nweets").add({
+  text: nweet,
+  createdAt: Date.now(),
+  creatorId: userObj.uid
+});
+setNweet("");
+```
+
+**3. 고유 식별자를 만들어주는 UUID 라이브러리 설치하기**
+- Storage는 문서에 아이디를 자동으로 만들어주지 않는다.
+- 따라서 직접 고유 식별자를 만들어서 저장할 데이터에 짝을 지어주어야하는데, 이를 구현하기 위해서는 랜덤 함수를 사용해야 한다.
+- 그러나 UUID 라이브러리를 사용한다면 더욱 편리하게 고유 식별자를 구현할 수 있다.
+- 이러한 UUID 라이브러리 설치 명령어는 아래와 같다.
+```jsx
+npm install uuid
+```
+- UUID는 범용 고유 식별자를 의미하며, UUID 라이브러리는 쉽게 이야기해서 아이디를 생성해주는 라이브러리이다.
+- 이때 주의할 점은 UUID는 버전이 달라지면 사용 예시가 바뀔 수 있으므로, GIthub README 문서에 있는 Create a UUID 항목을 보고 컴포넌트로 불러와야 한다.
+
+**4. UUID import하기**
+- UUID를 사용하기 위해서는 아래의 코드를 import해주어야 한다.
+- 이후 uuidv4 함수를 실행하기만 하면 UUID를 사용할 수 있다.
+```jsx
+import { v4 as uuidv4 } from "uuid";
+```
+
+**5. Storage 레퍼런스 사용해 보기**
+- Storage는 레퍼런스라고 하는 경로 시스템을 가지고 있다.
+- 이를 통해 경로를 생성하면 이 경로를 이용해서 파일을 업로드하거나 지우는 등의 작업을 할 수 있다.
+- 따라서 다음과 같이 레퍼런스를 이용하여 코드를 작성해주어야 한다.<br>
+→ [관련 커밋 : Edit Home.js](https://github.com/jsso16/nwitter/commit/62ba3cd073b90d3ea9725daefa4c7b5b1359b212)
+- 이때 storageService.ref().child(...)와 같이 레퍼런스의 함수인 child를 사용하면 폴더, 파일 이름을 설정할 수 있다.
+
+**6. Storage에 사진 저장해 보기**
+- 파일 업로드를 위해서는 Storage에서 제공해주는 함수인 putString을 사용하여야 한다.
+- putString 함수는 URL을 인자로 전달하기만 하면 해당 파일이 Storage에 바로 저장되기 때문에 굉장히 유용하다.
+- 그동안 사진 파일을 URL로 변환하려고 하였던 이유가 바로 이 때문이다.
+- 이러한 putString 함수를 사용한 코드는 아래와 같다.
+```jsx
+const attachmentRef = storageService.ref().child(`$(userObj.uid)/${uuidv4()}`);
+const response = await attachmentRef.putString(attachment, "data_url");
+console.log(response);
+```
+- 파일 업로드 성공 여부는 콘솔에 UploadTaskSnapshot 항목을 펼쳐보면 state:"sucess"라는 메시지를 통해 확인할 수 있다.
+- 더욱 정확하게 확인하고 싶다면 Firebase의 Storage에서도 확인할 수 있다.
+
+**7. Storage에 사진 불러오기**
+- 사진을 불러오기 위해서는 response.ref.getDownloadURL 함수를 사용해야 한다.
+- 위 함수에서 response.ref는 스냅샷 레퍼런스를 이용할 수 있고, getDownloadURL 함수는 파일을 다운로드할 수 있는 Storage의 URL을 반환한다.
+- 이를 사용하기 위해서는 기존의 코드를 아래와 같이 수정해주면 된다.
+```jsx
+console.log(response);  // 기존 코드
+```
+```jsx
+console.log(await response.ref.getDownloadURL());  // 수정 코드
+```
+
+**8. 사진을 포함한 트윗 결과 화면에 출력하기**
+- 사진이 포함된 트윗 결과를 화면에 출력하기 위해서는 다음과 같이 코드를 작성해주어야 한다.
+- 이 코드를 작성하기 위해서는 앞서 주석 처리했던 트윗 업로드 로직 코드를 되돌린 후 코드를 수정해주면 된다.
+- 이때 주의할 점은 트윗 업로드 로직이 attachmentUrl 다음에 위치하도록 해야한다.<br>
+→ [관련 커밋 : Edit Home.js & Nweet.js](https://github.com/jsso16/nwitter/commit/c25fa470b571e88dc0f40fdf2563bb352dfe5314)
+
+**9. 코드 정리하기**
+- 현재 코드는 사진 파일 유무와 상관없이 레퍼런스를 생성한다는 문제점이 있다.
+- 따라서 이를 해결하기 위해서는 아래와 같이 코드를 수정해주어야 한다.
+```jsx
+let attachmentUrl = "";
+
+if (attachment !== "") {
+  const attachmentRef = storageService.ref().child(`$(userObj.uid)/${uuidv4()}`);
+  const response = await attachmentRef.putString(attachment, "data_url");
+  attachmentUrl = await response.ref.getDownloadURL();
+}
+```
+- 이렇게 코드를 수정해주면 attachment 값이 있을 때만 Storage에 파일을 등록할 수 있다.
+- 이때 주의할 점은 if문 안에서 attachmentUrl을 정의하면 안된다는 것이다.
+- 그 이유는 if문 안에 attachmentUrl을 정의하게 되면 if문 안에서만 참조해야하는 변수가 되어 add 함수에서 attachmentUrl을 사용할 수 없기 때문이다.
+
+**10. 트윗 삭제 시 사진을 Storage에서 삭제하기**
+- 트윗 삭제 시 사진도 함께 삭제하기 위해서는 refFromURL 함수를 사용해야 한다.
+- await storageService.refFromURL(...).delete()와 같이 refFromURL 함수를 사용하면 attachmentUrl만으로 Storage에서 해당 파일의 위치를 바로 찾아 삭제할 수 있다.<br>
+→ [관련 커밋 : Edit Nweet.js](https://github.com/jsso16/nwitter/commit/22d6e4cbda0142f2311504af7189ef339a29f37c)
+
+> 내가 쓴 트윗만 보기
+
+**1. 파일 정리하기**
+- 트윗 필터링 기능을 구현하기에 앞서 필요하지 않은 파일들을 삭제해준다.
+  - EditProfile.js
+- 또한 지금까지의 Profile 컴포넌트는 'Firebase의 모든 연결을 그냥 끊어버리는 방식'으로 구현한 로그아웃 기능만 있었지만, 이제는 로그인한 사용자의 프로필을 보여주기 위한 사용자 정보가 필요하다. 
+- 따라서 추가적으로 이러한 데이터를 받아오기 위해서는 다음과 같이 코드를 추가해주어야 한다.<br>
+→ [관련 커밋 : Delete & Edit files](https://github.com/jsso16/nwitter/commit/68ad22d9562b88cc1706c920da3b4b681b350c01)
+
+**2. 트윗 필터링 기능 구현하기**
+- 로그인한 사용자의 트윗만 가져오는 함수를 만들기 위해 다음과 같이 코드를 작성해준다.
+```jsx
+import { authService, dbService } from "fbase";
+import { useEffect } from "react";
+
+  ...
+
+  const getMyNweets = async() => {
+    const nweets = await dbService.collection("nweets").where("creatorId", "==", userObj.uid);
+  };
+
+  useEffect(() => {}, []);
+
+  ...
+
+```
+- 이때 Firebase가 제공하는 쿼리 함수인 where을 사용하는데, 이 함수는 필드, 조건, 찾으려는 값 순서로 인자를 전달해서 사용한다.
+
+**3. 정렬 쿼리 사용해 보기**
+- 트윗 목록을 오름차순 또는 내림차순으로 정렬하기 위해서는 orderBy 함수를 사용해야 한다.
+- orderBy 함수는 정렬 기준 필드, 정렬 방법을 문자열로 전달받는다.
+- 이러한 orderBy 함수 사용 방법은 아래와 같다.
+```jsx
+const nweets = await dbService.collection("nweets").where("creatorId", "==", userObj.uid).orderBy("createdAt", "asc");
+```
+
+**4. 필터링한 트윗 목록 콘솔에 출력해보기**
+- 지금까지의 쿼리문을 실행시키기 위해서는 get 함수를 사용해야 한다.
+- get 함수는 쿼리문을 통해 얻은 결과물을 가져오는 함수이다.
+- 따라서 필터링한 트윗 목록 콘솔에 출력하기 위해서는 다음과 같이 코드를 작성해주어야 한다.<br>
+→ [관련 커밋 : Edit Profile.js](https://github.com/jsso16/nwitter/commit/b9662b0ef33934a8440eb75237f0025e4581ffe3)
+- 이렇게 작성한 코드를 실행한 후, 콘솔을 확인해보면 에러 메세지가 나타나는 것을 확인할 수 있다.
+- 이는 Firebase에서 제공하는 데이터베이스 관련 함수 중에는 Firebase가 받아들일 준비가 되어 있지 않으면 사용할 수 없는 것들이 있기 때문이다.
+- 위와 같은 경우는 orderBy 함수를 사용했는데, 이 함수가 색인 작업이 되어 있는 상태가 아니였기 때문에 사용할 수 없었던 것이다.
+- 따라서 이를 해결하기 위해서는 콘솔에 나타나는 에러 메세지의 URL을 클릭하여 복합 색인 만들기 페이지에 접속한 후, 색인 만들기를 통해 색인 작업을 진행해주면 된다.
+
 ## 05월 25일
 > 트윗 수정 기능 만들기
 
@@ -64,7 +213,7 @@ reader.readAsDataURL(theFile);
 - 이때, readAsDataURL 함수는 파일 정보를 인자로 받아서 파일 위치를 URL로 반환해준다.
 - 이렇게 반환한 파일의 URL과 img 엘리먼트를 이용하여 사진을 웹 브라우저에 출력해주는 것이다.
 - 그러나 readAsDataURL 함수는 단순히 호출하는 방식으로 사용할 수 없다.
-- 이 함수는 React 생명주기 함수처럼 파일 선택 후 '웹 브라우저가 파일을 인식하는 시점', '웹 브라우저가 파일 인식이 끝난 시점'등을 포함하고 있어서 시점까지 관리해주어야 URL을 얻을 수 있기 때문이다.
+- 이 함수는 React 생명주기 함수처럼 파일 선택 후 '웹 브라우저가 파일을 인식하는 시점', '웹 브라우저가 파일 인식이 끝난 시점' 등을 포함하고 있어서 시점까지 관리해주어야 URL을 얻을 수 있기 때문이다.
 ```jsx
 reader.onloadend = (finishedEvent) => {
   console.log(finishedEvent);
